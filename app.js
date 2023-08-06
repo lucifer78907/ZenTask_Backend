@@ -16,6 +16,13 @@ app.use((req, res, next) => {
 
 app.use("/auth", authRoutes);
 
+app.use((error, req, res, next) => {
+  const status = error.statusCode;
+  const message = error.message;
+  const data = error.data ?? "Server error";
+  res.status(status).json({ message, status, data });
+});
+
 mongoose
   .connect(
     "mongodb+srv://Rudra:Hanuman%407@cluster0.mtjcxyj.mongodb.net/todo?retryWrites=true&w=majority"
