@@ -46,6 +46,36 @@ exports.signUp = async (req, res, next) => {
   }
 };
 
-exports.getsignUp = (req, res, next) => {
-  res.send("This signup works");
+exports.login = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed");
+      error.statusCode = 422;
+      error.data = errors.array();
+      throw error;
+    }
+    const email = req.body.email;
+    const password = req.body.password;
+    // check if email doesn't exists then throw an error
+    let user = await User.findOne({ email });
+    if (!user) {
+      const error = new Error("User doesn't exists");
+      error.statusCode = 404;
+      throw error;
+    }
+    // compare pass if exists
+    const isEqual = await bcrypt.compare(password, user.password);
+    if (!isEqual) {
+      const error = new Error("Wrong Password");
+      error.statusCode = 401;
+      throw error;
+    }
+    res.status(200).json({ message: "Successfully logged in", status: 200 });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 };
