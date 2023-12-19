@@ -14,6 +14,12 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  todos:[
+    {
+      type:Schema.Types.ObjectId,
+      ref:'Todo'
+    }
+  ]
 });
 
 module.exports = mongoose.model("User", userSchema);
