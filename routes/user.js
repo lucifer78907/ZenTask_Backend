@@ -8,6 +8,8 @@ router.post("/:userId/createTodo",userController.createUserTodo)
 
 router.patch("/:userId/updateTodo",userController.updateUserTodo)
 
+router.delete("/deleteTodo/:todoId",userController.deleteTodo)
+
 router.get("/:userId/todos",userController.getUserTodos)
 
 module.exports = router;

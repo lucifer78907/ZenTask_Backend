@@ -128,3 +128,26 @@ exports.updateUserTodo = async (req,res,next) => {
   }
   
 }
+
+// REMOVE TODO FROM USERS TOO
+
+exports.deleteTodo = async(req,res,next) => {
+  const todoId = req.params.todoId;
+
+  try {
+      let todo = await Todo.findByIdAndDelete(todoId);
+      if (!todo) {
+        const error = new Error("Todo not found");
+        error.statusCode = 404;
+        throw err;
+      }
+
+      res.status(201).json({message:'Deleted todo',status:200,deleted:true})
+      
+    } catch (err) {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    }
+}
