@@ -1,5 +1,6 @@
 const Todo = require("../models/Todo");
 const User = require("../models/User");
+const helper = require('../helper/checkDate')
 
 exports.getUserDetails = async (req, res, next) => {
   const userId = req.params.userId;
@@ -24,7 +25,6 @@ exports.getUserDetails = async (req, res, next) => {
 
 exports.getUserTodos = async(req,res,next) => {
   const userId = req.params.userId;
-  console.log(userId);
 
   try {
       let user = await User.findById(userId);
@@ -42,9 +42,40 @@ exports.getUserTodos = async(req,res,next) => {
           description:t.description,
           progress:t.percCompleted,
           priority:t.priority,
+          dueDate:t.dueDate,
         }
       })
-      console.log(allTodos);
+      res.status(200).json({message:'Successfully fetched todos',todos:allTodos,status:200});
+    } catch (err) {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    }
+}
+
+exports.getFutureTodos = async(req,res,next) => {
+  const userId = req.params.userId;
+
+  try {
+      let user = await User.findById(userId);
+      if (!user) {
+        const error = new Error("User not found");
+        error.statusCode = 404;
+        throw err;
+      }
+      // Find all todos of user
+      let {futureTodos} = await User.findById(userId).populate('futureTodos');
+      let allTodos = futureTodos.map(t => {
+        return {
+          id:t._id,
+          title:t.title,
+          description:t.description,
+          progress:t.percCompleted,
+          priority:t.priority,
+          dueDate:t.dueDate,
+        }
+      })
       res.status(200).json({message:'Successfully fetched todos',todos:allTodos,status:200});
     } catch (err) {
       if (!err.statusCode) {
@@ -57,6 +88,10 @@ exports.getUserTodos = async(req,res,next) => {
 exports.createUserTodo = async (req,res,next) => {
   const userId = req.params.userId;
   const body = req.body;
+  const date = new Date(body.date);
+  const currDate = new Date();
+  const time = helper.getDate(currDate,date)
+
 
   const todoObj = {
     title:body.title,
@@ -81,7 +116,10 @@ exports.createUserTodo = async (req,res,next) => {
     let creator=user;
     const todo = new Todo(todoObj);
     const result = await todo.save();
-    creator.todos.push(todo);
+    if(time === 'Today' || time === 'Tomorrow')
+      creator.todos.push(todo);
+    else
+      creator.futureTodos.push(todo);
     const end  = await creator.save();
 
     res.status(201).json({message:'Todo created',todo:todoObj,creator:{_id:creator._id,name:creator.username},status:201})
@@ -98,26 +136,45 @@ exports.createUserTodo = async (req,res,next) => {
 exports.updateUserTodo = async (req,res,next) => {
   const userId = req.params.userId;
   const body = req.body;
+  const currDate = new Date();
+
 
   const todoObj = {
     title:body.title,
     description:body.desc,
     percCompleted:0,
     priority:body.priority,
+    dueDate:body.date,
   }
 
-  console.log(todoObj)
 
   // find the todo
    try {
+    // todo if found , update the todo
+    const time = helper.getDate(currDate,new Date(body.date));
     let todo = await Todo.findByIdAndUpdate(body.id,todoObj,{new:true})
     if (!todo) {
       const error = new Error("User not found");
       error.statusCode = 404;
       throw err;
     }
-    // todo if found , update the todo
+    // update the user todo and future todo list
+    let user = await User.findById(userId);
+    // filter the future and curr todo list
+    let newTodos = user.todos.filter(t => t._id.toString() !== body.id)
+    let newFutureTodos = user.futureTodos.filter(t => t._id.toString() !== body.id)
 
+
+    user.todos = newTodos;
+    user.futureTodos = newFutureTodos;
+    // check which todolist to fill now
+    if(time === 'Today' || time === 'Tomorrow')
+      user.todos.push(todo);
+    else
+      user.futureTodos.push(todo);
+    
+    await user.save();
+  
     res.status(201).json({message:'updated todo',todo:todo,userId:userId,status:200})
     
   } catch (err) {

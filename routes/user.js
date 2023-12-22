@@ -12,4 +12,6 @@ router.delete("/deleteTodo/:todoId",userController.deleteTodo)
 
 router.get("/:userId/todos",userController.getUserTodos)
 
+router.get("/:userId/futureTodos", userController.getFutureTodos);
+
 module.exports = router;
