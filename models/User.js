@@ -14,18 +14,22 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  todos:[
+  imageUrl: {
+    type: String,
+    required: true,
+  },
+  todos: [
     {
-      type:Schema.Types.ObjectId,
-      ref:'Todo'
-    }
+      type: Schema.Types.ObjectId,
+      ref: "Todo",
+    },
   ],
-  futureTodos:[
+  futureTodos: [
     {
-      type:Schema.Types.ObjectId,
-      ref:'Todo'
-    }
-  ]
+      type: Schema.Types.ObjectId,
+      ref: "Todo",
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", userSchema);

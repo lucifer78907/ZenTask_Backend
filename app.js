@@ -1,16 +1,40 @@
 const env = require("dotenv").config();
+const path = require("path");
 const bodyParser = require("body-parser");
 const express = require("express");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
-const cors = require('cors')
+const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
 
-app.use(bodyParser.json()); //to parse the json data we are gonna use in our application
-
 app.use(cors());
+
+const fileStorage = multer.diskStorage({
+  destination: (req, res, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.filename);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedExtensions = ["image/jpg", "image/jpeg", "image/png"];
+  if (allowedExtensions.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    return cb(null, false);
+  }
+};
+
+app.use(bodyParser.json()); //to parse the json data we are gonna use in our application
+app.use("/images", express.static(path.join(__dirname, "images"))); //statically serve the images
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+);
 
 // app.options('*', (req, res) => {
 //   res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust origin based on your needs

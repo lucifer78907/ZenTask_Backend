@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
+const helper = require("../helper/randomNumberGen");
 
 exports.signUp = async (req, res, next) => {
   // check for errors
@@ -16,6 +17,8 @@ exports.signUp = async (req, res, next) => {
     const email = req.body.email;
     const username = req.body.username;
     const password = req.body.password;
+    const randomNum = helper.randomNumberGen(5);
+    const imageUrl = `images/profile-${randomNum}.jpg`; //default img for a new user
 
     let user = await User.findOne({ email: email });
     if (user) {
@@ -30,7 +33,10 @@ exports.signUp = async (req, res, next) => {
       email,
       username,
       password: hashedPassword,
+      imageUrl,
     });
+
+    console.log(user);
 
     const response = await user.save();
     res.status(201).json({
@@ -71,13 +77,11 @@ exports.login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    res
-      .status(200)
-      .json({
-        message: "Successfully logged in",
-        status: 200,
-        userId: user._id,
-      });
+    res.status(200).json({
+      message: "Successfully logged in",
+      status: 200,
+      userId: user._id,
+    });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
