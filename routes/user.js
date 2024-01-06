@@ -4,13 +4,15 @@ const userController = require("../controllers/userController");
 
 router.get("/:userId", userController.getUserDetails);
 
-router.post("/:userId/createTodo",userController.createUserTodo)
+router.put("/:userId", userController.updateUserDetails);
 
-router.patch("/:userId/updateTodo",userController.updateUserTodo)
+router.post("/:userId/createTodo", userController.createUserTodo);
 
-router.delete("/deleteTodo/:todoId",userController.deleteTodo)
+router.patch("/:userId/updateTodo", userController.updateUserTodo);
 
-router.get("/:userId/todos",userController.getUserTodos)
+router.delete("/deleteTodo/:todoId", userController.deleteTodo);
+
+router.get("/:userId/todos", userController.getUserTodos);
 
 router.get("/:userId/futureTodos", userController.getFutureTodos);
 

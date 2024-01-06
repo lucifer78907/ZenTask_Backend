@@ -29,6 +29,42 @@ exports.getUserDetails = async (req, res, next) => {
   }
 };
 
+exports.updateUserDetails = async (req, res, next) => {
+  if (!req.file) {
+    const error = new Error("No image provided");
+    error.statusCode = 422;
+    throw error;
+  }
+  const userId = req.params.userId;
+  const username = req.body.username;
+  const email = req.body.email;
+  const password = req.body.password;
+  const confirmPassword = req.body.confirmPassword;
+  const file = req.file.path;
+
+  try {
+    let user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw err;
+    }
+
+    user.email = email;
+    user.username = username;
+    user.imageUrl = file;
+
+    await user.save();
+
+    res.status(200).json({ message: "Update User details", user });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.getUserTodos = async (req, res, next) => {
   const userId = req.params.userId;
 

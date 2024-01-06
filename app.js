@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
 const cors = require("cors");
 const multer = require("multer");
+const crypto = require("crypto");
 
 const app = express();
 
@@ -17,7 +18,13 @@ const fileStorage = multer.diskStorage({
     cb(null, "images");
   },
   filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + "-" + file.filename);
+    crypto.randomBytes(10, (error, buffer) => {
+      if (error) throw error;
+      const parts = file.originalname.split(".");
+      const extension = parts[parts.length - 1];
+      const filename = buffer.toString("hex") + "." + extension;
+      cb(null, filename);
+    });
   },
 });
 
