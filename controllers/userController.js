@@ -1,6 +1,7 @@
 const Todo = require("../models/Todo");
 const User = require("../models/User");
 const helper = require("../helper/checkDate");
+const bcrypt = require("bcryptjs");
 
 exports.getUserDetails = async (req, res, next) => {
   const userId = req.params.userId;
@@ -30,6 +31,7 @@ exports.getUserDetails = async (req, res, next) => {
 };
 
 exports.updateUserDetails = async (req, res, next) => {
+  // add image deletion
   if (!req.file) {
     const error = new Error("No image provided");
     error.statusCode = 422;
@@ -43,20 +45,36 @@ exports.updateUserDetails = async (req, res, next) => {
   const file = req.file.path;
 
   try {
-    let user = await User.findById(userId);
+    // Compare both the fields first
+    if (password !== confirmPassword) {
+      const error = new Error("Passwords do not match");
+      error.statusCode = 401;
+      throw error;
+    }
+
+    // hash the new password and save
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    let user = await User.findByIdAndUpdate(userId, {
+      $set: {
+        username: username,
+        email: email,
+        imageUrl: file,
+        password: hashedPassword,
+      },
+    });
+
     if (!user) {
       const error = new Error("User not found");
       error.statusCode = 404;
-      throw err;
+      throw error;
     }
 
-    user.email = email;
-    user.username = username;
-    user.imageUrl = file;
-
-    await user.save();
-
-    res.status(200).json({ message: "Update User details", user });
+    res.status(200).json({
+      message: "Update User details",
+      user: { ...user, password: "Hidden" },
+      status: 200,
+    });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
