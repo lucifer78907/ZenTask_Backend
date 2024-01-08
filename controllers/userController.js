@@ -1,6 +1,7 @@
 const Todo = require("../models/Todo");
 const User = require("../models/User");
 const helper = require("../helper/checkDate");
+const fileHelper = require("../helper/clearFile");
 const bcrypt = require("bcryptjs");
 
 exports.getUserDetails = async (req, res, next) => {
@@ -51,6 +52,17 @@ exports.updateUserDetails = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
+
+    const temp = await User.findById(userId);
+    const prevImg = temp.imageUrl;
+    const exculded = [
+      "images/profile-1.jpg",
+      "images/profile-2.jpg",
+      "images/profile-3.jpg",
+      "images/profile-4.jpg",
+    ];
+    //only clear non-deafault images
+    if (!exculded.includes(prevImg)) fileHelper.clearImage(prevImg);
 
     // hash the new password and save
     const hashedPassword = await bcrypt.hash(password, 12);
