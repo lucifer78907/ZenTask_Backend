@@ -1,19 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
+const isAuth = require("../middleware/is-auth"); //checks for authentication
 
-router.get("/:userId", userController.getUserDetails);
+router.get("/:userId", isAuth, userController.getUserDetails);
 
-router.put("/:userId", userController.updateUserDetails);
+router.put("/:userId", isAuth, userController.updateUserDetails);
 
-router.post("/:userId/createTodo", userController.createUserTodo);
+router.post("/:userId/createTodo", isAuth, userController.createUserTodo);
 
-router.patch("/:userId/updateTodo", userController.updateUserTodo);
+router.patch("/:userId/updateTodo", isAuth, userController.updateUserTodo);
 
-router.delete("/deleteTodo/:todoId", userController.deleteTodo);
+router.delete("/deleteTodo/:todoId", isAuth, userController.deleteTodo);
 
-router.get("/:userId/todos", userController.getUserTodos);
+router.get("/:userId/todos", isAuth, userController.getUserTodos);
 
-router.get("/:userId/futureTodos", userController.getFutureTodos);
+router.get("/:userId/futureTodos", isAuth, userController.getFutureTodos);
 
 module.exports = router;

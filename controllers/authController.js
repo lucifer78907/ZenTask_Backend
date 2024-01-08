@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const helper = require("../helper/randomNumberGen");
+const jwt = require("jsonwebtoken");
 
 exports.signUp = async (req, res, next) => {
   // check for errors
@@ -77,10 +78,17 @@ exports.login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
+    // Creating the token
+    const token = jwt.sign(
+      { email: user.email, userId: user._id.toString() },
+      process.env.PRIVATE_KEY, //secret key
+      { expiresIn: "1h" }
+    );
     res.status(200).json({
       message: "Successfully logged in",
       status: 200,
-      userId: user._id,
+      userId: user._id.toString(),
+      token: token,
     });
   } catch (err) {
     if (!err.statusCode) {
