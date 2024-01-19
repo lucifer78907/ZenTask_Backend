@@ -27,14 +27,23 @@ const TodoSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    creator:{
-      id:{
-        type:Schema.Types.ObjectId,
-        ref:'User',
+    recurrStatus: {
+      isRecurring: {
+        type: Boolean,
+        default: false,
       },
-    }
+      tillDate: {
+        type: Date,
+      },
+    },
+    creator: {
+      id: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    },
   },
   { timestamps: true } //created and updated at
 );
 
-module.exports = mongoose.model('Todo',TodoSchema)
+module.exports = mongoose.model("Todo", TodoSchema);

@@ -105,6 +105,7 @@ exports.getUserTodos = async (req, res, next) => {
       error.statusCode = 404;
       throw err;
     }
+    // Clear User todo relations -> deleted Todos refs and todo which are not recurring anymore
     // Find all todos of user
     let { todos } = await User.findById(userId).populate("todos");
     let allTodos = todos.map((t) => {
@@ -115,6 +116,7 @@ exports.getUserTodos = async (req, res, next) => {
         progress: t.percCompleted,
         priority: t.priority,
         dueDate: t.dueDate,
+        recurrStatus: t.recurrStatus,
       };
     });
     res.status(200).json({
@@ -171,6 +173,7 @@ exports.createUserTodo = async (req, res, next) => {
   const date = new Date(body.date);
   const currDate = new Date();
   const time = helper.getDate(currDate, date);
+  const isRecurringTodo = body.isRecurr;
 
   const todoObj = {
     title: body.title,
@@ -180,6 +183,10 @@ exports.createUserTodo = async (req, res, next) => {
     dueDate: new Date(body.date),
     creator: {
       id: userId,
+    },
+    recurrStatus: {
+      isRecurring: isRecurringTodo,
+      tillDate: new Date(body.date),
     },
   };
 
@@ -197,6 +204,7 @@ exports.createUserTodo = async (req, res, next) => {
     const result = await todo.save();
     if (time === "Today" || time === "Tomorrow") creator.todos.push(todo);
     else creator.futureTodos.push(todo);
+    if (isRecurringTodo) creator.recurringTodos.push(todo);
     const end = await creator.save();
 
     res.status(201).json({

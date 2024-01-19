@@ -43,20 +43,6 @@ app.use(
   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 );
 
-// app.options('*', (req, res) => {
-//   res.setHeader('Access-Control-Allow-Origin', '*'); // Adjust origin based on your needs
-//   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-//   next();
-// });
-
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*"); //star means any
-//   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS,HEAD");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-//   next();
-// });
-
 app.use("/user", userRoutes);
 app.use("/auth", authRoutes);
 

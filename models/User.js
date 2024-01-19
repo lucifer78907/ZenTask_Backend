@@ -30,6 +30,12 @@ const userSchema = new Schema({
       ref: "Todo",
     },
   ],
+  recurringTodos: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Todo",
+    },
+  ],
 });
 
 module.exports = mongoose.model("User", userSchema);
