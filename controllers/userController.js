@@ -105,8 +105,6 @@ exports.getUserTodos = async (req, res, next) => {
       error.statusCode = 404;
       throw err;
     }
-    // Clear User todo relations -> deleted Todos refs and todo which are not recurring anymore
-    console.log(user);
 
     // Find all todos of user
     let { todos } = await User.findById(userId).populate("todos");
@@ -124,9 +122,20 @@ exports.getUserTodos = async (req, res, next) => {
         recurrStatus: t.recurrStatus,
       };
     });
+    let allRecurringTodos = recurringTodos.map((t) => {
+      return {
+        id: t._id,
+        title: t.title,
+        description: t.description,
+        progress: t.percCompleted,
+        priority: t.priority,
+        dueDate: t.dueDate,
+        recurrStatus: t.recurrStatus,
+      };
+    });
     res.status(200).json({
       message: "Successfully fetched todos",
-      todos: allTodos,
+      todos: [...allTodos, ...allRecurringTodos],
       status: 200,
     });
   } catch (err) {
@@ -157,6 +166,7 @@ exports.getFutureTodos = async (req, res, next) => {
         progress: t.percCompleted,
         priority: t.priority,
         dueDate: t.dueDate,
+        recurrStatus: t.recurrStatus,
       };
     });
     res.status(200).json({
