@@ -106,8 +106,13 @@ exports.getUserTodos = async (req, res, next) => {
       throw err;
     }
     // Clear User todo relations -> deleted Todos refs and todo which are not recurring anymore
+    console.log(user);
+
     // Find all todos of user
     let { todos } = await User.findById(userId).populate("todos");
+    let { recurringTodos } = await User.findById(userId).populate(
+      "recurringTodos"
+    );
     let allTodos = todos.map((t) => {
       return {
         id: t._id,
@@ -202,9 +207,9 @@ exports.createUserTodo = async (req, res, next) => {
     let creator = user;
     const todo = new Todo(todoObj);
     const result = await todo.save();
-    if (time === "Today" || time === "Tomorrow") creator.todos.push(todo);
-    else creator.futureTodos.push(todo);
     if (isRecurringTodo) creator.recurringTodos.push(todo);
+    else if (time === "Today" || time === "Tomorrow") creator.todos.push(todo);
+    else if (!isRecurringTodo) creator.futureTodos.push(todo);
     const end = await creator.save();
 
     res.status(201).json({
@@ -278,6 +283,8 @@ exports.updateUserTodo = async (req, res, next) => {
 
 exports.deleteTodo = async (req, res, next) => {
   const todoId = req.params.todoId;
+  const userId = req.params.userId;
+  const type = req.params.typeTodo;
 
   try {
     let todo = await Todo.findByIdAndDelete(todoId);
@@ -290,6 +297,13 @@ exports.deleteTodo = async (req, res, next) => {
     res
       .status(201)
       .json({ message: "Deleted todo", status: 200, deleted: true });
+
+    // Clearing user-todo post relations
+    let user = await User.findById(userId);
+    if (type === "todos") user.todos.pull(todoId);
+    else if (type === "recurringTodo") user.recurringTodos.pull(todoId);
+    else if (type === "futureTodos") user.futureTodos.pull(todoId);
+    await user.save();
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

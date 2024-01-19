@@ -11,7 +11,11 @@ router.post("/:userId/createTodo", isAuth, userController.createUserTodo);
 
 router.patch("/:userId/updateTodo", isAuth, userController.updateUserTodo);
 
-router.delete("/deleteTodo/:todoId", isAuth, userController.deleteTodo);
+router.delete(
+  "/:userId/deleteTodo/:todoId/:typeTodo",
+  isAuth,
+  userController.deleteTodo
+);
 
 router.get("/:userId/todos", isAuth, userController.getUserTodos);
 
